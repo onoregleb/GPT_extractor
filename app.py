@@ -14,6 +14,11 @@ import io
 from openai.error import APIError
 nest_asyncio.apply()
 
+import pysqlite3
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+
 
 class MyDocument:
     def __init__(self, page_content, metadata=None):
