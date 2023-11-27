@@ -12,7 +12,6 @@ import asyncio
 import nest_asyncio
 import io
 from openai.error import APIError
-import chromadb
 nest_asyncio.apply()
 
 
