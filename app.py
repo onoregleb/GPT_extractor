@@ -37,8 +37,7 @@ Context: {context}
 Question: {question}
 Useful answers:"""
 
-os.environ["OPENAI_API_KEY"] = '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'
-os.environ["SERPAPI_API_KEY"] ='3839cec540ca246099821bafc877dc98bedc9986427aa4a47a80ca65323bbc62'
+os.environ["OPENAI_API_KEY"] = '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'
 
 response = Document()
 
