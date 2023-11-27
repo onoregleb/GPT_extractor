@@ -37,7 +37,7 @@ Context: {context}
 Question: {question}
 Useful answers:"""
 
-os.environ["OPENAI_API_KEY"] = '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'
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 response = Document()
 
