@@ -358,7 +358,9 @@ with st.form('myform', clear_on_submit=False):
         selected_num_employees = num_employees
         st.session_state['selected_num_employees'] = selected_num_employees
 
-    if st.button('Создать сотрудника'):
+    create_employee = st.checkbox('Создать сотрудника')
+
+    if create_employee:
         for i in range(selected_num_employees):
             st.subheader(f'Информация о сотруднике {i + 1}')
             employee_name_key = f'employee_name_{i + 1}'
@@ -390,8 +392,6 @@ with st.form('myform', clear_on_submit=False):
 
         st.error("Пожалуйста, заполните следующие обязательные поля:\n" + "\n".join(unfilled_fields))
         submitted = False
-
-    submitted = st.form_submit_button('Сгенерировать документ')
 
     if submitted:
         with st.spinner('Документ обрабатывается...'):
