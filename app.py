@@ -348,7 +348,7 @@ st.title('Сократи ВКР')
 uploaded_file = st.file_uploader('Загрузите текст', type='docx')
 
 with st.form('myform', clear_on_submit=False):
-    num_employees = st.number_input('Выберите количество сотрудников', min_value=1, max_value=5, step=1)
+    num_employees = st.number_input('Выберите количество сотрудников', min_value=1, max_value=5, step=1, on_change=True)
     team_name = st.text_input('Введите название команды')
     project_name = st.text_input('Введите название проекта')
 
