@@ -12,12 +12,12 @@ import asyncio
 import nest_asyncio
 import io
 from openai.error import APIError
-nest_asyncio.apply()
-
 import pysqlite3
 import sys
-sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+nest_asyncio.apply()
 
+
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 
 class MyDocument:
@@ -45,6 +45,7 @@ Useful answers:"""
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 response = Document()
+
 
 def docx_bytesio_to_md(input_bytesio):
     try:
