@@ -391,6 +391,8 @@ with st.form('myform', clear_on_submit=False):
         st.error("Пожалуйста, заполните следующие обязательные поля:\n" + "\n".join(unfilled_fields))
         submitted = False
 
+    submitted = st.form_submit_button('Сгенерировать документ')
+
     if submitted:
         with st.spinner('Документ обрабатывается...'):
             employees_info = []
