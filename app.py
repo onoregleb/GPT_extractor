@@ -365,11 +365,16 @@ with st.form('myform', clear_on_submit=False):
             st.subheader(f'Информация о сотруднике {i + 1}')
             employee_name_key = f'employee_name_{i + 1}'
             university_info_key = f'university_info_{i + 1}'
+            # Инициализируем ключи в st.session_state, если они еще не существуют
+            if employee_name_key not in st.session_state:
+                st.session_state[employee_name_key] = ''
+            if university_info_key not in st.session_state:
+                st.session_state[university_info_key] = ''
             employee_name = st.text_input(f'ФИО сотрудника {i + 1}', key=employee_name_key)
             university_info = st.text_input(f'ВУЗ, направление, курс сотрудника {i + 1}', key=university_info_key)
 
     # Проверяем, все ли поля заполнены
-    all_fields_filled = all(st.session_state[f'employee_name_{i + 1}'] and st.session_state[f'university_info_{i + 1}']
+    all_fields_filled = all(st.session_state.get(f'employee_name_{i + 1}', '') and st.session_state.get(f'university_info_{i + 1}', '')
                             for i in range(selected_num_employees))
 
     # Проверяем, была ли форма отправлена
@@ -385,9 +390,9 @@ with st.form('myform', clear_on_submit=False):
             unfilled_fields.append("Введите название команды.")
 
         for i in range(selected_num_employees):
-            if not st.session_state[f'employee_name_{i + 1}']:
+            if not st.session_state.get(f'employee_name_{i + 1}', ''):
                 unfilled_fields.append(f"ФИО сотрудника {i + 1} не заполнено.")
-            if not st.session_state[f'university_info_{i + 1}']:
+            if not st.session_state.get(f'university_info_{i + 1}', ''):
                 unfilled_fields.append(f'ВУЗ, направление, курс сотрудника {i + 1} не заполнено.')
 
         st.error("Пожалуйста, заполните следующие обязательные поля:\n" + "\n".join(unfilled_fields))
