@@ -314,7 +314,6 @@ def generate_response(uploaded_file, employees_info, project_name, num_employees
                   "Научно-техническое решение", "Задел", "Характеристика проблемы", "Решение проблемы",
                   "Держатель проблемы"]
 
-        # Генерация ответов для question1 - question9 и сохранение их в базе данных
         tasks = [loop.create_task(async_run(qa_chain, question)) for question in questions[:9]]
         results = loop.run_until_complete(asyncio.gather(*tasks))
 
@@ -349,9 +348,7 @@ st.title('Сократи ВКР')
 uploaded_file = st.file_uploader('Загрузите текст', type='docx')
 
 with st.form('myform', clear_on_submit=False):
-    # Добавляем дополнительные поля в зависимости от выбранного количества сотрудников
     num_employees = st.radio('Выберите количество сотрудников', options=list(range(1, 6)))
-
     team_name = st.text_input('Введите название команды')
     project_name = st.text_input('Введите название проекта')
 
@@ -361,21 +358,37 @@ with st.form('myform', clear_on_submit=False):
         selected_num_employees = num_employees
         st.session_state['selected_num_employees'] = selected_num_employees
 
-    for i in range(selected_num_employees):
-        st.subheader(f'Информация о сотруднике {i + 1}')
-        employee_name_key = f'employee_name_{i + 1}'
-        university_info_key = f'university_info_{i + 1}'
-        employee_name = st.text_input(f'ФИО сотрудника {i + 1}', key=employee_name_key)
-        university_info = st.text_input(f'ВУЗ, направление, курс сотрудника {i + 1}', key=university_info_key)
+    if st.button('Создать сотрудника'):
+        for i in range(selected_num_employees):
+            st.subheader(f'Информация о сотруднике {i + 1}')
+            employee_name_key = f'employee_name_{i + 1}'
+            university_info_key = f'university_info_{i + 1}'
+            employee_name = st.text_input(f'ФИО сотрудника {i + 1}', key=employee_name_key)
+            university_info = st.text_input(f'ВУЗ, направление, курс сотрудника {i + 1}', key=university_info_key)
 
     # Проверяем, все ли поля заполнены
     all_fields_filled = all(st.session_state[f'employee_name_{i + 1}'] and st.session_state[f'university_info_{i + 1}']
                             for i in range(selected_num_employees))
 
     # Проверяем, была ли форма отправлена
-    submitted = st.form_submit_button('Submit')
+    submitted = st.form_submit_button('Сгенерировать документ')
 
     if submitted and not (uploaded_file and team_name and all_fields_filled):
+        unfilled_fields = []
+
+        if not uploaded_file:
+            unfilled_fields.append("Файл не загружен.")
+
+        if not team_name:
+            unfilled_fields.append("Введите название команды.")
+
+        for i in range(selected_num_employees):
+            if not st.session_state[f'employee_name_{i + 1}']:
+                unfilled_fields.append(f"ФИО сотрудника {i + 1} не заполнено.")
+            if not st.session_state[f'university_info_{i + 1}']:
+                unfilled_fields.append(f'ВУЗ, направление, курс сотрудника {i + 1} не заполнено.')
+
+        st.error("Пожалуйста, заполните следующие обязательные поля:\n" + "\n".join(unfilled_fields))
         submitted = False
 
     if submitted:
@@ -389,17 +402,20 @@ with st.form('myform', clear_on_submit=False):
                 employees_info.append({'employee_name': employee_name, 'university_info': university_info})
             try:
                 response = generate_response(uploaded_file, employees_info, project_name, num_employees)
+                st.session_state['form_processed'] = True
             except APIError as e:
                 st.error(f"Произошла ошибка: {e}, попробуйте подключить VPN")
 
-with io.BytesIO() as temp_file:
-    response.save(temp_file)
-    temp_file.seek(0)
+
+if st.session_state.get('form_processed'):
+    with io.BytesIO() as temp_file:
+        response.save(temp_file)
+        temp_file.seek(0)
 
 
-    st.download_button(
-        label="Скачать документ",
-        data=temp_file,
-        file_name="document.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    )
+        st.download_button(
+            label="Скачать документ",
+            data=temp_file,
+            file_name="document.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
