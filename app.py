@@ -358,6 +358,7 @@ with st.form('myform', clear_on_submit=False):
         selected_num_employees = num_employees
         st.session_state['selected_num_employees'] = selected_num_employees
 
+    #Чтобы создать сотрудников (кнопки не поодерживаются в формах)
     create_employee = st.checkbox('Создать сотрудника')
 
     if create_employee:
