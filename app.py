@@ -477,11 +477,11 @@ def generate_response(uploaded_file, employees_info, project_name, num_employees
                   "Уровни TRL (УГТ) - ближайшие 3 года", "Выполнение работ по уточнению параметров продукции - ближайшие 3 года",
                   "Организация производства продукции", "Реализация продукции", "Календарный план"]
 
-        first_part = questions[:13] + questions[24:28]
-        tasks = [loop.create_task(async_run(qa_chain, question)) for question in first_part]
-        results = loop.run_until_complete(asyncio.gather(*tasks))
+        first_set_questions = questions[:6]
+        tasks = [loop.create_task(async_run(qa_chain, question)) for question in first_set_questions]
+        results_first_part = loop.run_until_complete(asyncio.gather(*tasks))
 
-        docs = [MyDocument(result) for result in results]
+        docs = [MyDocument(result) for result in results_first_part]
         splitted_texts = splitter.split_documents(docs)
         vectordb = Chroma.from_documents(
             documents=splitted_texts,
@@ -490,17 +490,36 @@ def generate_response(uploaded_file, employees_info, project_name, num_employees
         )
         vectordb.persist()
 
-        second_part = questions[13:24] + questions[28:]
-        tasks = [loop.create_task(async_run(qa_chain, question)) for question in second_part]
+        # Second set of questions
+        second_set_questions = questions[6:13] + questions[24:28]
+        tasks = [loop.create_task(async_run(qa_chain, question)) for question in second_set_questions]
         results_second_part = loop.run_until_complete(asyncio.gather(*tasks))
+
+        docs = [MyDocument(result) for result in results_second_part]
+        splitted_texts = splitter.split_documents(docs)
+        vectordb = Chroma.from_documents(
+            documents=splitted_texts,
+            embedding=embedding,
+            persist_directory=persist_directory
+        )
+        vectordb.persist()
+
+        # Third set of questions
+        third_set_questions = questions[13:24] + questions[28:]
+        tasks = [loop.create_task(async_run(qa_chain, question)) for question in third_set_questions]
+        results_third_part = loop.run_until_complete(asyncio.gather(*tasks))
 
         doc = Document()
 
-        for question, result in zip(titles[:13] + titles[24:28], results):
+        for question, result in zip(titles[:6], results_first_part):
             doc.add_heading(question, level=1)
             doc.add_paragraph(result)
 
-        for question, result in zip(titles[13:24] + titles[28:], results_second_part):
+        for question, result in zip(titles[6:13] + titles[24:28], results_second_part):
+            doc.add_heading(question, level=1)
+            doc.add_paragraph(result)
+
+        for question, result in zip(titles[13:24] + titles[28:], results_third_part):
             doc.add_heading(question, level=1)
             doc.add_paragraph(result)
 
