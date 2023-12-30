@@ -453,11 +453,6 @@ def generate_response(uploaded_file, employees_info, project_name, num_employees
             chain_type_kwargs=chain_type_kwargs
         )
 
-        async def async_run(chain, question):
-            return await loop.run_in_executor(None, chain.run, question)
-
-        loop = asyncio.get_event_loop()
-
         questions = [question1, question2, question3, question4, question5, question6, question7, question8, question9,
                      question10, question11, question12, question13, question14, question15, question16, question17,
                      question18, question19, question20, question21, question22, question23, question24, question25,
@@ -477,41 +472,49 @@ def generate_response(uploaded_file, employees_info, project_name, num_employees
                   "Уровни TRL (УГТ) - ближайшие 3 года", "Выполнение работ по уточнению параметров продукции - ближайшие 3 года",
                   "Организация производства продукции", "Реализация продукции", "Календарный план"]
 
+        async def async_run(chain, question):
+            return await loop.run_in_executor(None, chain.run, question)
+
         async def run_with_delays(loop, qa_chain, questions):
             results = []
             for question in questions:
                 result = await async_run(qa_chain, question)
                 results.append(result)
-                time.sleep(1)
+                await asyncio.sleep(1)
             return results
 
+        loop = asyncio.get_event_loop()
 
-        first_set_questions = questions[:13] + questions[24:28]
-        results_first_part = loop.run_until_complete(run_with_delays(loop, qa_chain, first_set_questions))
+        try:
+            first_set_questions = questions[:13] + questions[24:28]
+            results_first_part = loop.run_until_complete(run_with_delays(loop, qa_chain, first_set_questions))
 
-        docs = [MyDocument(result) for result in results_first_part]
-        splitted_texts = splitter.split_documents(docs)
-        vectordb = Chroma.from_documents(
-            documents=splitted_texts,
-            embedding=embedding,
-            persist_directory=persist_directory
-        )
-        vectordb.persist()
+            docs = [MyDocument(result) for result in results_first_part]
+            splitted_texts = splitter.split_documents(docs)
+            vectordb = Chroma.from_documents(
+                documents=splitted_texts,
+                embedding=embedding,
+                persist_directory=persist_directory
+            )
+            vectordb.persist()
 
-        second_set_questions = questions[13:24] + questions[28:]
-        results_second_part = loop.run_until_complete(run_with_delays(loop, qa_chain, second_set_questions))
+            second_set_questions = questions[13:24] + questions[28:]
+            results_second_part = loop.run_until_complete(run_with_delays(loop, qa_chain, second_set_questions))
 
-        doc = Document()
+            doc = Document()
 
-        for question, result in zip(titles[:13] + titles[24:28], results_first_part):
-            doc.add_heading(question, level=1)
-            doc.add_paragraph(result)
+            for question, result in zip(titles[:13] + titles[24:28], results_first_part):
+                doc.add_heading(question, level=1)
+                doc.add_paragraph(result)
 
-        for question, result in zip(titles[13:24] + titles[28:], results_second_part):
-            doc.add_heading(question, level=1)
-            doc.add_paragraph(result)
+            for question, result in zip(titles[13:24] + titles[28:], results_second_part):
+                doc.add_heading(question, level=1)
+                doc.add_paragraph(result)
 
-        return doc
+            return doc
+        except Exception as e:
+            print(f"Произошла ошибка: {e}")
+            return None
 
 
 st.set_page_config(page_title='Сократи ВКР')
