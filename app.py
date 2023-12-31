@@ -42,11 +42,10 @@ Context: {context}
 Question: {question}
 Useful answers:"""
 
-#os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-os.environ["OPENAI_API_KEY"] =  "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"
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 response = Document()
 
-
+"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"
 def docx_bytesio_to_md(input_bytesio):
     try:
         doc = Document(input_bytesio)
