@@ -45,7 +45,6 @@ Useful answers:"""
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 response = Document()
 
-"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"
 def docx_bytesio_to_md(input_bytesio):
     try:
         doc = Document(input_bytesio)
